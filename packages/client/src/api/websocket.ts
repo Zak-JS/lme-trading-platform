@@ -16,8 +16,10 @@ class WebSocketClient {
     }
 
     this.isConnecting = true;
-    // Connect directly to backend WebSocket server
-    const wsUrl = "ws://localhost:3001/ws";
+    // Use environment variable for production, fallback to localhost for dev
+    const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl =
+      import.meta.env.VITE_WS_URL || `${wsProtocol}//localhost:3001/ws`;
 
     this.ws = new WebSocket(wsUrl);
 
