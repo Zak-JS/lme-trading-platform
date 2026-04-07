@@ -1,5 +1,8 @@
 FROM node:20-alpine
 
+# Install build tools for native modules (better-sqlite3)
+RUN apk add --no-cache python3 make g++
+
 # Install pnpm
 RUN npm install -g pnpm
 
@@ -14,11 +17,9 @@ COPY packages/shared ./packages/shared
 # Copy server package
 COPY packages/server ./packages/server
 
-# Install build tools for native modules (better-sqlite3)
-RUN apk add --no-cache python3 make g++
-
-# Install dependencies using pnpm and build native modules
-RUN pnpm install --ignore-scripts=false
+# Install dependencies and rebuild native modules
+RUN pnpm install
+RUN pnpm rebuild better-sqlite3
 
 # Build shared package first
 RUN pnpm --filter @lme/shared build
