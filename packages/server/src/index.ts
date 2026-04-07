@@ -1,9 +1,15 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
+import fastifyStatic from "@fastify/static";
+import path from "path";
+import { fileURLToPath } from "url";
 import { registerRoutes } from "./routes/index.js";
 import { websocketHandler, broadcastPriceUpdate } from "./websocket/index.js";
 import { priceService } from "./services/index.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 const HOST = process.env.HOST || "0.0.0.0";
@@ -31,6 +37,22 @@ async function main() {
 
   fastify.get("/health", async () => {
     return { status: "ok", timestamp: new Date().toISOString() };
+  });
+
+  // Serve static client files in production
+  const clientDistPath = path.join(__dirname, "../../client/dist");
+  await fastify.register(fastifyStatic, {
+    root: clientDistPath,
+    prefix: "/",
+    decorateReply: false,
+  });
+
+  // SPA fallback - serve index.html for non-API routes
+  fastify.setNotFoundHandler(async (request, reply) => {
+    if (!request.url.startsWith("/api") && !request.url.startsWith("/ws")) {
+      return reply.sendFile("index.html");
+    }
+    return reply.status(404).send({ error: "Not found" });
   });
 
   try {

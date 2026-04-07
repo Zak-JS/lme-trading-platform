@@ -11,11 +11,10 @@ WORKDIR /app
 # Copy root package files for workspace
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 
-# Copy shared package
+# Copy all packages
 COPY packages/shared ./packages/shared
-
-# Copy server package
 COPY packages/server ./packages/server
+COPY packages/client ./packages/client
 
 # Install dependencies
 RUN pnpm install
@@ -27,6 +26,9 @@ WORKDIR /app
 
 # Build shared package first
 RUN pnpm --filter @lme/shared build
+
+# Build client
+RUN pnpm --filter @lme/client build
 
 # Build server
 RUN pnpm --filter @lme/server build
