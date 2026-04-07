@@ -5,6 +5,21 @@ A real-time trading platform for London Metal Exchange base metals, demonstratin
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)
 ![React](https://img.shields.io/badge/React-18.3-61dafb)
 ![Node.js](https://img.shields.io/badge/Node.js-20+-green)
+![Deployed](https://img.shields.io/badge/Deployed-Railway-blueviolet)
+
+## 🚀 Live Demo
+
+**https://trading-platform-production-3db5.up.railway.app**
+
+---
+
+## 📚 Documentation
+
+| Document                                       | Description                                                          |
+| ---------------------------------------------- | -------------------------------------------------------------------- |
+| [REQUIREMENTS.md](./REQUIREMENTS.md)           | Business requirements, user flows with diagrams, technical decisions |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)           | System architecture, data flow diagrams, deployment details          |
+| [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) | Folder structure, naming conventions, file organization              |
 
 ---
 
@@ -31,25 +46,28 @@ pnpm run dev
 ## Tech Stack & Rationale
 
 ### Frontend
-| Technology | Purpose | Why This Choice |
-|------------|---------|-----------------|
-| **React 18** | UI Framework | Industry standard, demonstrates component architecture |
-| **TypeScript** | Type Safety | Catches errors at compile time, self-documenting code |
-| **TanStack Query** | Server State | Handles caching, background refetching, optimistic updates |
-| **TailwindCSS** | Styling | Rapid prototyping, consistent design system |
-| **Recharts** | Data Visualization | Composable charts for portfolio allocation |
-| **Vite** | Build Tool | Fast HMR, optimized production builds |
+
+| Technology         | Purpose            | Why This Choice                                            |
+| ------------------ | ------------------ | ---------------------------------------------------------- |
+| **React 18**       | UI Framework       | Industry standard, demonstrates component architecture     |
+| **TypeScript**     | Type Safety        | Catches errors at compile time, self-documenting code      |
+| **TanStack Query** | Server State       | Handles caching, background refetching, optimistic updates |
+| **TailwindCSS**    | Styling            | Rapid prototyping, consistent design system                |
+| **Recharts**       | Data Visualization | Composable charts for portfolio allocation                 |
+| **Vite**           | Build Tool         | Fast HMR, optimized production builds                      |
 
 ### Backend
-| Technology | Purpose | Why This Choice |
-|------------|---------|-----------------|
-| **Fastify** | HTTP Server | High performance, TypeScript-first, plugin ecosystem |
-| **WebSocket** | Real-time Updates | Sub-second price updates without polling |
-| **Drizzle ORM** | Database | Type-safe queries, lightweight, excellent DX |
-| **SQLite** | Database | Zero-config, portable, sufficient for demo scale |
-| **Zod** | Validation | Runtime validation with TypeScript inference |
+
+| Technology      | Purpose           | Why This Choice                                      |
+| --------------- | ----------------- | ---------------------------------------------------- |
+| **Fastify**     | HTTP Server       | High performance, TypeScript-first, plugin ecosystem |
+| **WebSocket**   | Real-time Updates | Sub-second price updates without polling             |
+| **Drizzle ORM** | Database          | Type-safe queries, lightweight, excellent DX         |
+| **SQLite**      | Database          | Zero-config, portable, sufficient for demo scale     |
+| **Zod**         | Validation        | Runtime validation with TypeScript inference         |
 
 ### Monorepo Structure
+
 ```
 ├── packages/
 │   ├── shared/     # Types, schemas, constants (used by both)
@@ -65,6 +83,7 @@ pnpm run dev
 ## Architecture Patterns
 
 ### 1. Feature-Based Organization (Frontend)
+
 ```
 src/features/
 ├── trading/
@@ -74,17 +93,21 @@ src/features/
 └── portfolio/
     └── ...
 ```
+
 Scales better than grouping by file type. Each feature is self-contained.
 
 ### 2. Service Layer (Backend)
+
 ```
 Routes → Services → Database
 ```
+
 - **Routes:** HTTP/validation only
 - **Services:** Business logic, reusable across routes
 - **Database:** Drizzle schema + queries
 
 ### 3. Real-Time Architecture
+
 ```
 ┌─────────┐    WebSocket    ┌─────────┐
 │ Client  │◄───────────────►│ Server  │
@@ -99,39 +122,42 @@ Routes → Services → Database
 Price updates flow via WebSocket, React Query cache is updated, UI re-renders automatically.
 
 ### 4. Backend-Agnostic Design
+
 The API contract is documented separately, allowing the backend to be reimplemented in any language (Java/Spring Boot scaffold included) while the frontend remains unchanged.
 
 ---
 
 ## Key Features
 
-| Feature | Implementation |
-|---------|----------------|
-| **Live Price Grid** | WebSocket subscription, flash animations on price change |
-| **Trade Execution** | Form validation, optimistic updates, position recalculation |
-| **Portfolio View** | Positions table, P&L calculation, allocation pie chart |
-| **Connection Status** | Visual indicator, automatic reconnection with backoff |
+| Feature               | Implementation                                              |
+| --------------------- | ----------------------------------------------------------- |
+| **Live Price Grid**   | WebSocket subscription, flash animations on price change    |
+| **Trade Execution**   | Form validation, optimistic updates, position recalculation |
+| **Portfolio View**    | Positions table, P&L calculation, allocation pie chart      |
+| **Connection Status** | Visual indicator, automatic reconnection with backoff       |
 
 ---
 
 ## API Overview
 
 ### REST Endpoints
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/prices` | All current metal prices |
-| GET | `/api/trades` | Trade history |
-| POST | `/api/trades` | Execute a trade |
-| GET | `/api/positions` | Current holdings |
-| GET | `/api/positions/summary` | Portfolio summary |
+
+| Method | Endpoint                 | Description              |
+| ------ | ------------------------ | ------------------------ |
+| GET    | `/api/prices`            | All current metal prices |
+| GET    | `/api/trades`            | Trade history            |
+| POST   | `/api/trades`            | Execute a trade          |
+| GET    | `/api/positions`         | Current holdings         |
+| GET    | `/api/positions/summary` | Portfolio summary        |
 
 ### WebSocket Events
-| Event | Direction | Description |
-|-------|-----------|-------------|
+
+| Event            | Direction       | Description               |
+| ---------------- | --------------- | ------------------------- |
 | `PRICE_SNAPSHOT` | Server → Client | Initial prices on connect |
-| `PRICE_UPDATE` | Server → Client | Single price change |
-| `TRADE_EXECUTED` | Server → Client | Trade confirmation |
-| `PING/PONG` | Bidirectional | Heartbeat |
+| `PRICE_UPDATE`   | Server → Client | Single price change       |
+| `TRADE_EXECUTED` | Server → Client | Trade confirmation        |
+| `PING/PONG`      | Bidirectional   | Heartbeat                 |
 
 ---
 

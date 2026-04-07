@@ -2,6 +2,54 @@
 
 This document demonstrates consultative requirements gathering and technical decision-making for a bespoke London Metal Exchange trading platform.
 
+**🚀 Live Demo:** https://trading-platform-production-3db5.up.railway.app
+
+**Related Documentation:**
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - Technical architecture & decisions
+- [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) - Folder structure & conventions
+
+---
+
+## High-Level System Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                        LME TRADING PLATFORM                                      │
+│              https://trading-platform-production-3db5.up.railway.app             │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│   ┌─────────────────────────────────────────────────────────────────────────┐   │
+│   │                           FRONTEND (React)                               │   │
+│   │  ┌───────────────┐  ┌───────────────┐  ┌───────────────────────────┐   │   │
+│   │  │  Price Table  │  │  Trade Panel  │  │    Portfolio View         │   │   │
+│   │  │  (AG Grid)    │  │  (Buy/Sell)   │  │  (Holdings + P&L)         │   │   │
+│   │  │  • Sparklines │  │  • Quantity   │  │  • Allocation Chart       │   │   │
+│   │  │  • Flash anim │  │  • Market/Lim │  │  • Real-time updates      │   │   │
+│   │  └───────────────┘  └───────────────┘  └───────────────────────────┘   │   │
+│   └─────────────────────────────────────────────────────────────────────────┘   │
+│                                      │                                           │
+│                          ┌───────────┴───────────┐                              │
+│                          │   WebSocket + REST    │                              │
+│                          └───────────┬───────────┘                              │
+│                                      │                                           │
+│   ┌─────────────────────────────────────────────────────────────────────────┐   │
+│   │                           BACKEND (Fastify)                              │   │
+│   │  ┌───────────────┐  ┌───────────────┐  ┌───────────────────────────┐   │   │
+│   │  │ Price Service │  │ Trade Service │  │   Position Service        │   │   │
+│   │  │ • Simulation  │  │ • Execution   │  │   • P&L Calculation       │   │   │
+│   │  │ • Broadcasting│  │ • Validation  │  │   • Portfolio Summary     │   │   │
+│   │  └───────────────┘  └───────────────┘  └───────────────────────────┘   │   │
+│   │                              │                                           │   │
+│   │                        ┌─────┴─────┐                                    │   │
+│   │                        │  SQLite   │                                    │   │
+│   │                        │ (Drizzle) │                                    │   │
+│   │                        └───────────┘                                    │   │
+│   └─────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## 1. Domain Research
@@ -22,6 +70,28 @@ This document demonstrates consultative requirements gathering and technical dec
 #### Flow 1: Monitor Prices
 
 ```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         MONITOR PRICES FLOW                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────────┐  │
+│  │  User   │───►│ Opens App   │───►│  WebSocket  │───►│  Price Table    │  │
+│  │         │    │             │    │  Connects   │    │  Renders        │  │
+│  └─────────┘    └─────────────┘    └─────────────┘    └─────────────────┘  │
+│                                           │                    │            │
+│                                           ▼                    ▼            │
+│                                    ┌─────────────┐    ┌─────────────────┐  │
+│                                    │   Server    │    │  • 6 metals     │  │
+│                                    │  Broadcasts │    │  • Sparklines   │  │
+│                                    │  Updates    │    │  • Flash anim   │  │
+│                                    │  (1.5s)     │    │  • Range bars   │  │
+│                                    └─────────────┘    └─────────────────┘  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Steps:**
+
 1. User opens Trading page
 2. PriceTable displays all 6 metals with real-time data
 3. WebSocket streams price updates from server
@@ -29,11 +99,39 @@ This document demonstrates consultative requirements gathering and technical dec
 5. User can sort by any column (price, change, volume)
 6. Sparklines show 20-point price trend at a glance
 7. Range bars indicate current price within day's high/low
-```
+
+---
 
 #### Flow 2: Execute Trade
 
 ```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         EXECUTE TRADE FLOW                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────────┐  │
+│  │  User   │───►│ Select Row  │───►│ TradePanel  │───►│  Enter Qty      │  │
+│  │         │    │ in Table    │    │  Updates    │    │  Click BUY/SELL │  │
+│  └─────────┘    └─────────────┘    └─────────────┘    └────────┬────────┘  │
+│                                                                 │            │
+│                                                                 ▼            │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                        POST /api/trades                              │    │
+│  │  { symbol: "CU", side: "BUY", quantity: 10, orderType: "MARKET" }   │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                           │                                  │
+│                                           ▼                                  │
+│  ┌───────────────┐    ┌───────────────┐    ┌───────────────────────────┐   │
+│  │ Trade Created │───►│ Position      │───►│  UI Updates               │   │
+│  │ in Database   │    │ Updated       │    │  • Holdings table         │   │
+│  └───────────────┘    └───────────────┘    │  • Recent trades feed     │   │
+│                                            └───────────────────────────┘   │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Steps:**
+
 1. User clicks a row in PriceTable to select metal
 2. TradePanel updates to show selected metal's current price
 3. User enters quantity (metric tonnes)
@@ -41,27 +139,85 @@ This document demonstrates consultative requirements gathering and technical dec
 5. Trade executes at current market price
 6. Position updates immediately in Holdings table
 7. Trade appears in Recent Trades feed
-```
+
+---
 
 #### Flow 3: Review Portfolio
 
 ```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         REVIEW PORTFOLIO FLOW                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────┐    ┌─────────────────────────────────────────────────────┐    │
+│  │  User   │───►│              Portfolio View                          │    │
+│  │         │    │  ┌─────────────────────┐  ┌─────────────────────┐   │    │
+│  └─────────┘    │  │   Holdings Table    │  │  Allocation Chart   │   │    │
+│                 │  │  ┌───┬───┬───┬───┐  │  │      ┌─────┐        │   │    │
+│                 │  │  │Sym│Qty│Avg│P&L│  │  │     /   CU  \       │   │    │
+│                 │  │  ├───┼───┼───┼───┤  │  │    │   35%   │      │   │    │
+│                 │  │  │CU │100│8.4│+5%│  │  │    │ AL 25%  │      │   │    │
+│                 │  │  │AL │250│2.2│+3%│  │  │     \ NI 20%/       │   │    │
+│                 │  │  │NI │ 50│15k│-2%│  │  │      └─────┘        │   │    │
+│                 │  │  └───┴───┴───┴───┘  │  └─────────────────────┘   │    │
+│                 │  └─────────────────────┘                            │    │
+│                 │                                                      │    │
+│                 │  ┌─────────────────────────────────────────────┐    │    │
+│                 │  │  Total Portfolio Value: $1,234,567          │    │    │
+│                 │  │  Unrealized P&L: +$45,678 (+3.8%)           │    │    │
+│                 │  └─────────────────────────────────────────────┘    │    │
+│                 └─────────────────────────────────────────────────────┘    │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Steps:**
+
 1. User views Holdings table showing all positions
 2. Each position shows: quantity, avg cost, current price, P&L
 3. Unrealized P&L updates in real-time as prices change
 4. Allocation pie chart shows portfolio breakdown by metal
 5. Total portfolio value displayed at top
-```
+
+---
 
 #### Flow 4: Manage Pending Orders
 
 ```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       PENDING ORDERS FLOW                                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────────┐  │
+│  │  User   │───►│ TradePanel  │───►│ Select LIMIT│───►│  Set Limit      │  │
+│  │         │    │             │    │ Order Type  │    │  Price          │  │
+│  └─────────┘    └─────────────┘    └─────────────┘    └────────┬────────┘  │
+│                                                                 │            │
+│                                                                 ▼            │
+│                                    ┌─────────────────────────────────────┐  │
+│                                    │        Pending Orders List          │  │
+│                                    │  ┌───┬───────┬───────┬──────────┐  │  │
+│                                    │  │ # │ Metal │ Limit │  Status  │  │  │
+│                                    │  ├───┼───────┼───────┼──────────┤  │  │
+│                                    │  │ 1 │  CU   │ 8,400 │ PENDING  │  │  │
+│                                    │  │ 2 │  AL   │ 2,250 │ PENDING  │  │  │
+│                                    │  └───┴───────┴───────┴──────────┘  │  │
+│                                    │         [Cancel] [Cancel]          │  │
+│                                    └─────────────────────────────────────┘  │
+│                                                   │                          │
+│                                                   ▼                          │
+│                              When price hits limit → Auto-execute            │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Steps:**
+
 1. User creates limit order via TradePanel
 2. Order appears in Pending Orders list with status
 3. User can cancel pending orders
 4. When price hits limit, order executes automatically
 5. Position and trades update accordingly
-```
 
 ---
 
