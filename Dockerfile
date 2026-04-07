@@ -15,7 +15,7 @@ COPY packages/shared ./packages/shared
 COPY packages/server ./packages/server
 
 # Install dependencies using pnpm
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Build shared package first
 RUN pnpm --filter @lme/shared build
