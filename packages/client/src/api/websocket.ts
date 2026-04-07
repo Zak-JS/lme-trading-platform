@@ -16,12 +16,13 @@ class WebSocketClient {
     }
 
     this.isConnecting = true;
-    // Use environment variable for production, fallback to localhost for dev
+    // Use current host for WebSocket (works for both dev and production)
     const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl =
-      import.meta.env.VITE_WS_URL || `${wsProtocol}//localhost:3001/ws`;
+    const wsHost =
+      import.meta.env.VITE_WS_URL ||
+      `${wsProtocol}//${window.location.host}/ws`;
 
-    this.ws = new WebSocket(wsUrl);
+    this.ws = new WebSocket(wsHost);
 
     this.ws.onopen = () => {
       console.log("WebSocket connected");
