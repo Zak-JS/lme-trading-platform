@@ -14,8 +14,11 @@ COPY packages/shared ./packages/shared
 # Copy server package
 COPY packages/server ./packages/server
 
-# Install dependencies using pnpm
-RUN pnpm install
+# Install build tools for native modules (better-sqlite3)
+RUN apk add --no-cache python3 make g++
+
+# Install dependencies using pnpm and build native modules
+RUN pnpm install --ignore-scripts=false
 
 # Build shared package first
 RUN pnpm --filter @lme/shared build

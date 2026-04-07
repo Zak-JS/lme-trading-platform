@@ -1,4 +1,4 @@
-import type { MetalSymbol } from "../constants/metals";
+import type { MetalSymbol } from "../constants/metals.js";
 
 export type PriceDirection = "up" | "down" | "neutral";
 

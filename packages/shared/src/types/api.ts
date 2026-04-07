@@ -1,6 +1,6 @@
-import type { MetalSymbol } from "../constants/metals";
-import type { TradeSide, OrderType, Trade, Position } from "./trading";
-import type { MetalPrice, PriceCandle } from "./metals";
+import type { MetalSymbol } from "../constants/metals.js";
+import type { TradeSide, OrderType, Trade, Position } from "./trading.js";
+import type { MetalPrice, PriceCandle } from "./metals.js";
 
 export interface CreateTradeRequest {
   symbol: MetalSymbol;

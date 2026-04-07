@@ -1,7 +1,13 @@
-import { z } from 'zod';
-import { metalSymbolSchema } from './trade';
+import { z } from "zod";
+import { metalSymbolSchema } from "./trade.js";
 
-export const priceHistoryIntervalSchema = z.enum(['1m', '5m', '15m', '1h', '1d']);
+export const priceHistoryIntervalSchema = z.enum([
+  "1m",
+  "5m",
+  "15m",
+  "1h",
+  "1d",
+]);
 
 export const priceHistoryParamsSchema = z.object({
   symbol: metalSymbolSchema,
