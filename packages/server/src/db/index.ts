@@ -42,4 +42,42 @@ sqlite.exec(`
   );
 `);
 
+// Seed initial data if positions table is empty
+const positionCount = sqlite
+  .prepare("SELECT COUNT(*) as count FROM positions")
+  .get() as { count: number };
+if (positionCount.count === 0) {
+  console.log("🌱 Seeding initial data...");
+  const now = Date.now();
+
+  // Seed positions
+  const insertPosition = sqlite.prepare(`
+    INSERT INTO positions (id, symbol, side, quantity, avg_cost, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  const positions = [
+    { symbol: "CU", side: "LONG", quantity: 100, avgCost: 8400 },
+    { symbol: "AL", side: "LONG", quantity: 250, avgCost: 2280 },
+    { symbol: "NI", side: "LONG", quantity: 50, avgCost: 15800 },
+    { symbol: "ZN", side: "SHORT", quantity: 75, avgCost: 2500 },
+    { symbol: "PB", side: "SHORT", quantity: 30, avgCost: 2150 },
+  ];
+
+  for (let i = 0; i < positions.length; i++) {
+    const pos = positions[i];
+    insertPosition.run(
+      `pos_${i + 1}`,
+      pos.symbol,
+      pos.side,
+      pos.quantity,
+      pos.avgCost,
+      now,
+      now,
+    );
+  }
+
+  console.log(`✅ Seeded ${positions.length} positions`);
+}
+
 export * from "./schema.js";
