@@ -1,0 +1,24 @@
+{
+  "name": "lme-trading-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A bespoke trading platform for the London Metal Exchange",
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "dev:client": "pnpm --filter @lme/client dev",
+    "dev:server": "pnpm --filter @lme/server dev",
+    "build": "pnpm run --parallel build",
+    "lint": "pnpm run --parallel lint",
+    "typecheck": "pnpm run --parallel typecheck",
+    "db:generate": "pnpm --filter @lme/server db:generate",
+    "db:migrate": "pnpm --filter @lme/server db:migrate",
+    "db:seed": "pnpm --filter @lme/server db:seed"
+  },
+  "keywords": ["trading", "lme", "metals", "react", "fastify"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

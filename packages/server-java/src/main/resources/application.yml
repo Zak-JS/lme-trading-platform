@@ -1,0 +1,31 @@
+server:
+  port: 3001
+
+spring:
+  application:
+    name: lme-trading-server
+  
+  datasource:
+    url: jdbc:h2:file:./data/lme;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# Price simulation settings
+lme:
+  price:
+    update-interval-ms: 1000
+    volatility-percent: 0.1
