@@ -17,9 +17,13 @@ COPY packages/shared ./packages/shared
 # Copy server package
 COPY packages/server ./packages/server
 
-# Install dependencies and rebuild native modules
+# Install dependencies
 RUN pnpm install
-RUN pnpm rebuild better-sqlite3
+
+# Rebuild better-sqlite3 native module using npm (bypasses pnpm script blocking)
+WORKDIR /app/node_modules/.pnpm/better-sqlite3@11.10.0/node_modules/better-sqlite3
+RUN npm run build-release
+WORKDIR /app
 
 # Build shared package first
 RUN pnpm --filter @lme/shared build
