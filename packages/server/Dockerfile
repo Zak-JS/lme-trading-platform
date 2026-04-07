@@ -1,5 +1,8 @@
 FROM node:20-alpine
 
+# Install pnpm
+RUN npm install -g pnpm
+
 WORKDIR /app
 
 # Copy root package files for workspace
@@ -11,10 +14,7 @@ COPY packages/shared ./packages/shared
 # Copy server package
 COPY packages/server ./packages/server
 
-# Install pnpm
-RUN npm install -g pnpm
-
-# Install dependencies
+# Install dependencies using pnpm
 RUN pnpm install --frozen-lockfile
 
 # Build shared package first
@@ -25,6 +25,7 @@ RUN pnpm --filter @lme/server build
 
 WORKDIR /app/packages/server
 
+ENV PORT=3001
 EXPOSE 3001
 
 CMD ["node", "dist/index.js"]
