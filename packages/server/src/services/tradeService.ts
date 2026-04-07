@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { eq } from "drizzle-orm";
-import { db, trades, positions } from "../db";
-import { priceService } from "./priceService";
+import { db, trades, positions } from "../db/index.js";
+import { priceService } from "./priceService.js";
 import type {
   Trade,
   Position,

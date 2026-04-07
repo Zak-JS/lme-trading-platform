@@ -1,9 +1,9 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
-import { registerRoutes } from "./routes";
-import { websocketHandler, broadcastPriceUpdate } from "./websocket";
-import { priceService } from "./services";
+import { registerRoutes } from "./routes/index.js";
+import { websocketHandler, broadcastPriceUpdate } from "./websocket/index.js";
+import { priceService } from "./services/index.js";
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 const HOST = process.env.HOST || "0.0.0.0";

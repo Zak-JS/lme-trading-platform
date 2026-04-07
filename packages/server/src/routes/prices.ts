@@ -1,9 +1,9 @@
-import { FastifyInstance } from 'fastify';
-import { priceService } from '../services';
-import { metalSymbolSchema } from '@lme/shared';
+import { FastifyInstance } from "fastify";
+import { priceService } from "../services/index.js";
+import { metalSymbolSchema } from "@lme/shared";
 
 export async function pricesRoutes(fastify: FastifyInstance) {
-  fastify.get('/api/prices', async () => {
+  fastify.get("/api/prices", async () => {
     const prices = priceService.getAllPrices();
     return {
       prices,
@@ -11,22 +11,25 @@ export async function pricesRoutes(fastify: FastifyInstance) {
     };
   });
 
-  fastify.get<{ Params: { symbol: string } }>('/api/prices/:symbol', async (request, reply) => {
-    const parseResult = metalSymbolSchema.safeParse(request.params.symbol);
-    
-    if (!parseResult.success) {
-      return reply.status(400).send({ 
-        message: 'Invalid metal symbol',
-        validSymbols: ['CU', 'AL', 'ZN', 'PB', 'NI', 'SN'],
-      });
-    }
+  fastify.get<{ Params: { symbol: string } }>(
+    "/api/prices/:symbol",
+    async (request, reply) => {
+      const parseResult = metalSymbolSchema.safeParse(request.params.symbol);
 
-    const price = priceService.getPrice(parseResult.data);
-    
-    if (!price) {
-      return reply.status(404).send({ message: 'Price not found' });
-    }
+      if (!parseResult.success) {
+        return reply.status(400).send({
+          message: "Invalid metal symbol",
+          validSymbols: ["CU", "AL", "ZN", "PB", "NI", "SN"],
+        });
+      }
 
-    return price;
-  });
+      const price = priceService.getPrice(parseResult.data);
+
+      if (!price) {
+        return reply.status(404).send({ message: "Price not found" });
+      }
+
+      return price;
+    },
+  );
 }

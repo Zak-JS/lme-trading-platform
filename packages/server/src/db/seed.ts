@@ -1,4 +1,4 @@
-import { db, positions, priceHistory } from "./index";
+import { db, positions, priceHistory } from "./index.js";
 import { METALS } from "@lme/shared";
 import { nanoid } from "nanoid";
 

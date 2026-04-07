@@ -1,7 +1,7 @@
-import { FastifyInstance } from 'fastify';
-import { pricesRoutes } from './prices';
-import { positionsRoutes } from './positions';
-import { tradesRoutes } from './trades';
+import { FastifyInstance } from "fastify";
+import { pricesRoutes } from "./prices.js";
+import { positionsRoutes } from "./positions.js";
+import { tradesRoutes } from "./trades.js";
 
 export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(pricesRoutes);

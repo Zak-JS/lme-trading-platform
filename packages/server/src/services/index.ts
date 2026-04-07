@@ -1,3 +1,3 @@
-export { priceService } from './priceService';
-export { tradeService } from './tradeService';
-export { positionService } from './positionService';
+export { priceService } from "./priceService.js";
+export { tradeService } from "./tradeService.js";
+export { positionService } from "./positionService.js";

@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { WebSocket, type RawData } from "ws";
-import { priceService } from "../services";
+import { priceService } from "../services/index.js";
 import type { ServerMessage, ClientMessage } from "@lme/shared";
 
 const clients = new Set<WebSocket>();

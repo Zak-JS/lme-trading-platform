@@ -1,5 +1,5 @@
-import { db, positions } from "../db";
-import { priceService } from "./priceService";
+import { db, positions } from "../db/index.js";
+import { priceService } from "./priceService.js";
 import type {
   Position,
   PositionSide,

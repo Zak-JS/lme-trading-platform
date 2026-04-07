@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { tradeService } from "../services";
+import { tradeService } from "../services/index.js";
 import { createTradeSchema } from "@lme/shared";
 
 export async function tradesRoutes(fastify: FastifyInstance) {
